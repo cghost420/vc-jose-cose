@@ -78,11 +78,28 @@
       postProcess: [window.respecVc.createVcExamples],
       license: "w3c-software-doc",
       xref: true,
+      otherLinks: [{
+        key: "Related Documents",
+        data: [{
+          value: "VC Data Model",
+          href: "https://www.w3.org/TR/vc-data-model-2.0/"
+        }, {
+          value: "DID Core",
+          href: "https://www.w3.org/TR/did-core/"
+        }]
+      }],
       localBiblio:  {
         "SD-JWT": {
           title:    "Selective Disclosure for JWTs (SD-JWT)",
           href:     "https://datatracker.ietf.org/doc/html/draft-ietf-oauth-selective-disclosure-jwt-05",
           authors:  [ "Daniel Fett" , "Kristina Yasuda" , "Brian Campbell"],
+          status:   "Internet-Draft",
+          publisher:  "IETF"
+        },
+        "SD-JWT-VC": {
+          title:    "SD-JWT-based Verifiable Credentials (SD-JWT VC)",
+          href:     "https://datatracker.ietf.org/doc/html/draft-ietf-oauth-sd-jwt-vc-00",
+          authors:  [ "Oliver Terbu", "Daniel Fett" ],
           status:   "Internet-Draft",
           publisher:  "IETF"
         },
@@ -92,6 +109,13 @@
           authors:  [ 	"Manu Sporny" , "Amy Guy" ],
           status:   "Internet-Draft",
           publisher:  "IETF"
+        },
+        "JOSE-REGISTRIES": {
+          title:    "The JSON Object Signing and Encryption (JOSE) Registries",
+          href:     "https://www.iana.org/assignments/jose",
+          authors:  ["The Internet Assigned Numbers Authority"],
+          status:   "REC",
+          publisher:  "The Internet Assigned Numbers Authority"
         },
       }
     };
@@ -119,52 +143,27 @@
       This specification describes how to secure media types
       expressing Verifiable Credentials and Verifiable Presentations
       as described in the [[VC-DATA-MODEL]], using approaches
-      described by the OAUTH, JOSE, and COSE working groups at IETF. This
-      includes JWTs [[RFC7519]], JWS [[RFC7515]], SD-JWT [[SD-JWT]], and COSE [[RFC9052]],
+      described by the OAuth, JOSE, and COSE working groups at IETF. 
+      This includes SD-JWT [[SD-JWT]] and COSE [[RFC9052]],
       and provides an approach using well-defined content types
       [[RFC6838]] and structured suffixes [[MULTIPLE-SUFFIXES]] 
-      to distinguish the data types of documents conforming to [[VC-DATA-MODEL]]
+      to distinguish the data types of unsecured documents conforming to [[VC-DATA-MODEL]]
       from the data types of secured documents conforming to [[VC-DATA-MODEL]],
       defined in this specification.
     </p>
     <p>
-      JSON Web Signatures (JWS) [[RFC7515]] provide a standardized
+      Selective Disclosure for JWTs (SD-JWT) [[SD-JWT]] provides a standardized
       mechanism for digitally signing JSON documents. It provides a means
-      to ensure the integrity, authenticity, and non-repudiation of
-      the information contained in a JSON document. JWS enables secure
-      communication and trust between parties by adding a
-      cryptographic signature to a payload. This signature is
-      generated using a private key and can be verified using the
-      corresponding public key. JWS enables content integrity, authentication and non repudiation,
-      protecting data from unauthorized modifications. The
-      versatility and wide adoption of JWS make it an essential
-      component for verifying the authenticity and integrity of
-      various application media types, including
-      authentication, authorization, and secure data exchange. These
-      properties make JWS especially well suited to securing the
-      JSON-LD [[VC-DATA-MODEL]] and through this to provide a means of
-      supporting the three party model (issuer, holder, verifier) for
-      exchange of verifiable credentials and verifiable presentations.
+      to ensure the integrity, authenticity, selective disclosure and non-repudiation of
+      the information contained in a JSON document. These
+      properties make SD-JWT especially well suited to securing documents
+      conforming to the JSON-LD [[VC-DATA-MODEL]].
     </p>
-    <p>
-      JSON Web Token (JWT) [[RFC7519]] is a widely-used means of
-      expressing
-      <a data-cite="VC-DATA-MODEL#claims">claims</a>, represented in JSON, to be transferred
-      between two parties. Providing a representation of the
-      [[VC-DATA-MODEL]] for JWT allows existing
-      systems and libraries to participate in the ecosystem described
-      in Section <a data-cite="VC-DATA-MODEL#ecosystem-overview">ecosystem
-        overview</a>. A JWT encodes a set of
-      <a data-cite="VC-DATA-MODEL#claims">claims</a> as a JSON object
-      that is secured via a JSON Web Signature (JWS) [[RFC7515]]
-      and/or JSON Web Encryption (JWE) [[?RFC7516]]. For this
-      specification, the use of JWE is out of scope.
     <p class="issue">
       The working group is discussing how we might comment on recent work, that does make
       use of encryption in <a
         href="https://openid.net/specs/openid-4-verifiable-presentations-1_0.html#section-3.2">OpenID for Verifiable
         Presentations</a>.
-    </p>
     </p>
     <p>
       CBOR Object Signing and Encryption (COSE) [[RFC9052]] is a
@@ -184,6 +183,11 @@
       confidentiality of CBOR data by encrypting it with symmetric or
       asymmetric encryption algorithms.
     </p>
+  </section>
+
+  <section class="informative">
+    <h3>Terminology</h3>
+    <div data-include="./terms.html"></div>
   </section>
 
   <section>
@@ -223,9 +227,8 @@
       <section>
         <h2>Securing JSON-LD Verifiable Credentials with JOSE</h2>
         <p>
-          This section details how to secure data payloads with the type
-          <code>application/vc+ld+json</code>
-          with JOSE.
+          This section details how to use JOSE to secure verifiable credentials conforming
+          to the [[VC-DATA-MODEL]].
         </p>
         <p>[[rfc7515]] MAY be used to secure this media type.</p>
         <p>
@@ -265,13 +268,12 @@
       <section>
         <h2>Securing JSON-LD Verifiable Presentations with JOSE</h2>
         <p>
-          This section details how to secure verifiable presentations
-          with the type
-          <code>application/vp+ld+json</code> with JOSE.
+          This section details how to use JOSE to secure verifiable presentations conforming
+          to the [[VC-DATA-MODEL]].
         </p>
         <p>[[rfc7515]] MAY be used to secure this media type.</p>
         <p>The <code>typ</code> parameter SHOULD be
-          <code>vp+ld+json+jwt</code>
+          <code>vp+ld+json+sd-jwt</code>
         </p>
         <p>When present, the <code>cty</code> parameter SHOULD be
           <code>vp+ld+json</code>
@@ -333,24 +335,20 @@
           with COSE.
         </p>
         <p>[[rfc9052]] MAY be used to secure this media type.</p>
-        <p>When using this approach, the <code>type (TBD)</code> SHOULD be
-          <code>vc+ld+json+cose</code>
-        </p>
-        <p class="issue">
-          See <a href="https://datatracker.ietf.org/doc/draft-jones-cose-typ-header-parameter/">draft-jones-cose-typ-header-parameter</a>,
-          regarding progress towards explicit typing for COSE.
+        <p>When using this approach, the <code>typ</code> SHOULD be
+          <code>vc+ld+json+cose</code>.
+          See <a href="https://www.ietf.org/archive/id/draft-ietf-cose-typ-header-parameter-00.html/">I-D.ietf-cose-typ-header-parameter</a>
+          for the COSE "<code>typ</code>" (type) header parameter.
         </p>
         <p>When using this approach, the <code>content type (3)</code>
-          SHOULD be <code>application/vc+ld+json</code></p>
+          SHOULD be <code>application/vc+ld+json</code>.</p>
         <p>
           See <a data-cite="rfc9052#section-3.1">Common COSE Header
             Parameters</a> for additional details.
         </p>
-        <p>See <a href="https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml">Concise
-            Binary Object Representation (CBOR) Tags</a> for additional
-          details.</p>
+        <p>See the IANA <a href="https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml">Concise Binary Object Representation (CBOR) Tags</a> registry
+	  for additional details.</p>
       </section>
-      <p class="issue" data-number="67"></p>
     </section>
   </section>
   <section class="informative">
@@ -391,8 +389,6 @@
       <p class="issue" data-number="31"></p>
       <p class="issue" data-number="30"></p>
       <p class="issue" data-number="15"></p>
-      <p class="issue" data-number="117"></p>
-      <p class="issue" data-number="117"></p>
       <p>
     In order to complete the <a data-cite="VC-DATA-MODEL#dfn-verify">verification</a> process, 
     a <a data-cite="VC-DATA-MODEL#dfn-verifier">verifier</a> needs to obtain the cryptographic keys used to secure the 
@@ -406,41 +402,51 @@
 
 
     <section>
-      <h2>Registered Claim Names</h2>
+      <h2>Registered Header Parameter and Claim Names</h2>
       <p>
-      When found in the <a data-cite="RFC7515#section-4.1">Protected Header</a>, or 
-      the <a data-cite="RFC7519#section-4.1.1">Protected Claimset</a>, members present in
-      <a href="https://www.iana.org/assignments/jwt/jwt.xhtml">IANA Assignments for JSON Web Token (JWT)</a> and 
-      <a href="https://www.iana.org/assignments/jose/jose.xhtml">IANA Assignments for JSON Object Signing and Encryption (JOSE)</a>
-      are to be interpreted according to the associated specifications referenced by IANA.
+      When present in
+      the <a data-cite="RFC7515#section-4">JOSE Header</a> or
+      the <a data-cite="RFC7519#section-4">JWT Claims Set</a>
+      members registered in
+      the IANA <a href="https://www.iana.org/assignments/jwt/jwt.xhtml">JSON Web Token Claims</a> registry or
+      the IANA <a href="https://www.iana.org/assignments/jose/jose.xhtml">JSON Web Signature and Encryption Header Parameters</a> registry
+      are to be interpreted as defined by the specifications referenced in the registries.
       </p>
       <p>
-      <a href="#registered-claim-names">Registered claims</a> that are present in either
-      the <a data-cite="RFC7515#section-4.1">Protected Header</a>
-      or the <a data-cite="RFC7519#section-4.1.1">Claimset</a> can be used to help
+      These parameters and claims can be used to help
       <a data-cite="VC-DATA-MODEL#dfn-verifier">verifiers</a> discover verification keys.
       </p>
       <section>
         <h2>kid</h2>
         <p>
-      If <code>kid</code> is present in the <a data-cite="RFC7515#section-4.1">Protected Header</a>,
+      If <code>kid</code> is present in the <a data-cite="RFC7515#section-4.1">JOSE Header</a>,
       a <a data-cite="VC-DATA-MODEL#dfn-verifier">verifier</a> can use this parameter
-      to obtain a <a data-cite="RFC7517#section-4">JSON Web Key</a> to use in the 
-      <a data-cite="VC-DATA-MODEL#dfn-verify">verification</a> process.
+      as a hint indicating which key was used to secure the verifiable credential, when performing a
+      <a data-cite="VC-DATA-MODEL#dfn-verify">verification</a> process as defined in <a data-cite="RFC7515#section-4.1.4">RFC7515</a>.
+        </p>
+        <p>
+          <code>kid</code> MUST be present when the key of the <a data-cite="VC-DATA-MODEL#dfn-issuers">issuer</a>
+          or <a data-cite="VC-DATA-MODEL#dfn-subjects">subject</a> is expressed as a DID URL.
         </p>
       </section>
       <section>
         <h2>iss</h2>
         <p>
-      If <code>iss</code> is present in the <a data-cite="RFC7515#section-4.1">Protected Header</a>
+      If <code>iss</code> is present in the <a data-cite="RFC7515#section-4.1">JOSE Header</a>
       or the <a data-cite="RFC7519#section-4.1.1">JWT Claims </a>,
       a <a data-cite="VC-DATA-MODEL#dfn-verifier">verifier</a> can use this parameter
       to obtain a <a data-cite="RFC7517#section-4">JSON Web Key</a> to use in the 
       <a data-cite="VC-DATA-MODEL#dfn-verify">verification</a> process.
         </p>
         <p>
+      The value of the <a data-cite="VC-DATA-MODEL#issuer">issuer</a> property can be either a string or an object.
+      When <code>issuer</code> value is a string, <code>iss</code> value, if present, MUST match <code>issuer</code> value.
+      When <code>issuer</code> value is an object with an <code>id</code> value,
+      <code>iss</code> value, if present, MUST match <code>issuer.id</code> value.
+        </p>
+        <p>
       If <code>kid</code> is also present in the
-      <a data-cite="RFC7515#section-4.1">Protected Header</a>, it is expected to be useful to
+      <a data-cite="RFC7515#section-4.1">JOSE Header</a>, it is expected to be useful to
       distinguish the specific key used.
         </p>
       <p class="issue"  data-number="31">
@@ -452,16 +458,11 @@
       <section>
         <h2>cnf</h2>
         <p>
-      If <code>cnf</code> is present in the <a data-cite="RFC7515#section-4.1">Protected Header</a>
+      If <code>cnf</code> is present in the <a data-cite="RFC7515#section-4.1">JOSE Header</a>
       or the <a data-cite="RFC7519#section-4.1.1">JWT Claims </a>,
-      a <a data-cite="VC-DATA-MODEL#dfn-verifier">verifier</a> can use this parameter
-      to obtain a <a data-cite="RFC7517#section-4">JSON Web Key</a> to use in the 
+      a <a data-cite="VC-DATA-MODEL#dfn-verifier">verifier</a> MAY use this parameter
+      to identify a proof-of-possesion key in the manner described in [[rfc7800]] for use in the
       <a data-cite="VC-DATA-MODEL#dfn-verify">verification</a> process.
-        </p>
-        <p>
-      If <code>kid</code> is also present in the
-      <a data-cite="RFC7515#section-4.1">Protected Header</a>, it is expected to be
-      useful to distinguish the specific key used.
         </p>
       </section>
       </section>
@@ -476,101 +477,461 @@
       and <a data-cite="VC-DATA-MODEL#dfn-holders">holders</a>.
       </p>
       
-      
       <section>
-        <h2>OpenID Connect</h2>
+        <h2>JWT Issuer</h2>
             <p>
-              OpenID Connect uses <a data-cite="RFC5785#section-3">Well-Known Uniform Resource Identifiers (URIs)</a> 
-              to enable <a data-cite="VC-DATA-MODEL#dfn-issuers">issuer</a> key discovery.
+              When the issuer value is a URL using the HTTPS scheme,
+              issuer metadata including the issuer's public keys can be retrieved using the mechanism
+              defined in <a data-cite="SD-JWT-VC"></a>.
             </p>
-            <ol>
-              <li>
-                <p>
-                  The <a data-cite="VC-DATA-MODEL#dfn-verifier">verifier</a> (or relying party)
-                  decodes the JWT claimset, and obtains the <code>iss</code> claim.
-                </p>
-              </li>
-              <li>
-                <p>
-                  The <code>iss</code> value is converted to the well-known OpenID Connect Configuration 
-                  Endpoint URL by applying the following URI template:
-                </p>
-                <pre class="example">
-                  https://{iss}/.well-known/openid-configuration
-                </pre>
-              </li>
-              <li>
-                <p>
-                  The OIDC Configuration Endpoint URL is dereferenced to a JSON document which contains issuer configuration details,
-                  one of which is the <code>jwks_uri</code>. This URL might also be well-known, for example:
-                </p>
-                <pre class="example">
-                  https://{iss}/.well-known/jwks
-                </pre>
-              </li>
-              <li>
-                <p>
-                  The OIDC <code>jwks_uri</code> is dereferenced to a JSON Web Key Set.
-                </p>
-                <p>
-                  The content type of the key set could be 
-                  <a href="https://www.iana.org/assignments/media-types/application/jwk-set+json">application/jwk-set+json</a> 
-                  or <a href="https://www.iana.org/assignments/media-types/application/json">application/json</a>.
-                </p>
-                <p>
-                  Here is an example of a key set used by an issuer:
-                </p>
-                <pre class="example">
-      {
-        "keys": [
-          {
-            "alg": "RS256",
-            "kty": "RSA",
-            "use": "sig",
-            "n": "wW9TkSbcn5FV3iUJ-812sqTvwTGCFrDm6vD2U-g23gn6rrBdFZQbf2bgEnSkolph6CanOYTQ1lKVhKjHLd6Q4MDVGidbVBhESxib2YIzJVUS-0oQgizkBEJxyHI4Zl3xX_sdA_yegLUi-Ykt_gaMPSw_vpxe-pBxu-jd14i-jDfwoPJUdF8ZJGS9orCPRiHCYLDgOscC9XibH9rUbTvG8q4bAPx9Ox6malx4OLvU3pXVjew6LG3iBi2YhpCWe6voMvZJYXqC1n5Mk_KOdGcCFtDgu3I56SGSfsF7-tI7qG1ZO8RMuzqH0LkJVirujYzXrnMZ7WgbMPXmHU8i4z04zw",
-            "e": "AQAB",
-            "kid": "NTBGNTJEMDc3RUE3RUVEOTM4NDcyOEFDNzEyOTY5NDNGOUQ4OEU5OA",
-            "x5t": "NTBGNTJEMDc3RUE3RUVEOTM4NDcyOEFDNzEyOTY5NDNGOUQ4OEU5OA",
-            "x5c": [
-              "MIIDCzCCAfOgAwIBAgIJANPng0XRWwsdMA0GCSqGSIb3DQEBBQUAMBwxGjAYBgNVBAMMEWNvbnRvc28uYXV0aDAuY29tMB4XDTE0MDcxMTE2NTQyN1oXDTI4MDMxOTE2NTQyN1owHDEaMBgGA1UEAwwRY29udG9zby5hdXRoMC5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDBb1ORJtyfkVXeJQn7zXaypO/BMYIWsObq8PZT6DbeCfqusF0VlBt/ZuASdKSiWmHoJqc5hNDWUpWEqMct3pDgwNUaJ1tUGERLGJvZgjMlVRL7ShCCLOQEQnHIcjhmXfFf+x0D/J6AtSL5iS3+Bow9LD++nF76kHG76N3XiL6MN/Cg8lR0XxkkZL2isI9GIcJgsOA6xwL1eJsf2tRtO8byrhsA/H07HqZqXHg4u9TeldWN7DosbeIGLZiGkJZ7q+gy9klheoLWfkyT8o50ZwIW0OC7cjnpIZJ+wXv60juobVk7xEy7OofQuQlWKu6NjNeucxntaBsw9eYdTyLjPTjPAgMBAAGjUDBOMB0GA1UdDgQWBBTLarHdkNa5CzPyiKJU51t8JWn9WTAfBgNVHSMEGDAWgBTLarHdkNa5CzPyiKJU51t8JWn9WTAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBBQUAA4IBAQA2FOjm+Bpbqk59rQBC0X6ops1wBcXH8clnXfG1G9qeRwLEwSef5HPz4TTh1f2lcf4Pcq2vF0HbVNJFnLVV+PjR9ACkto+v1n84i/U4BBezZyYuX2ZpEbv7hV/PWxg8tcVrtyPaj60UaA/pUA86CfYy+LckY4NRKmD7ZrcCzjxW2hFGNanfm2FEryxXA3RMNf6IiW7tbJ9ZGTEfA/DhVnZgh/e82KVX7EZnkB4MjCQrwj9QsWSMBtBiYp0/vRi9cxDFHlUwnYAUeZdHWTW+Rp2JX7Qwf0YycxgyjkGAUEZc4WpdNiQlwYf5G5epfOtHGiwiJS+u/nSYvqCFt57+g3R+"
-            ]
-          },
-          {
-            "alg": "RS256",
-            "kty": "RSA",
-            "use": "sig",
-            "n": "ylgVZbNR4nlsU_AbU8Zd7ZhVfmYuwq-RB1_YQWHY362pAed-qgSXV1QmKwCukQ2WDsPHWgpPuEf3O_acmJcCiSxhctpBr5WKkji5o50YX2FqC3xymGkYW5NilvFznKaKU45ulBVByrcb3Vt8BqqBAhaD4YywZZKo7mMudcq_M__f0_tB4fHsHHe7ehWobWtzAW7_NRP0_FjB4Kw4PiqJnChPvfbuxTCEUcIYrshRwD6GF4D_oLdeR44dwx4wtEgvPOtkQ5XIGrhQC_sgWcb2jh7YXauVUjuPezP-VkK7Wm9mZRe758q43SWxwT3afo5BLa3_YLWazqcpWRXn9QEDWw",
-            "e": "AQAB",
-            "kid": "aMIKy_brQk3nLd0PKd9ln",
-            "x5t": "-xcTyx47q3ddycG7LtE6QCcETbs",
-            "x5c": [
-              "MIIC/TCCAeWgAwIBAgIJH62yWyX7VxxQMA0GCSqGSIb3DQEBCwUAMBwxGjAYBgNVBAMTEWNvbnRvc28uYXV0aDAuY29tMB4XDTIwMDMxMTE5Mjk0N1oXDTMzMTExODE5Mjk0N1owHDEaMBgGA1UEAxMRY29udG9zby5hdXRoMC5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDKWBVls1HieWxT8BtTxl3tmFV+Zi7Cr5EHX9hBYdjfrakB536qBJdXVCYrAK6RDZYOw8daCk+4R/c79pyYlwKJLGFy2kGvlYqSOLmjnRhfYWoLfHKYaRhbk2KW8XOcpopTjm6UFUHKtxvdW3wGqoECFoPhjLBlkqjuYy51yr8z/9/T+0Hh8ewcd7t6Fahta3MBbv81E/T8WMHgrDg+KomcKE+99u7FMIRRwhiuyFHAPoYXgP+gt15Hjh3DHjC0SC8862RDlcgauFAL+yBZxvaOHthdq5VSO497M/5WQrtab2ZlF7vnyrjdJbHBPdp+jkEtrf9gtZrOpylZFef1AQNbAgMBAAGjQjBAMA8GA1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYEFPVdE4SPvuhlODV0GOcPE4QZ7xNuMA4GA1UdDwEB/wQEAwIChDANBgkqhkiG9w0BAQsFAAOCAQEAu2nhfiJk/Sp49LEsR1bliuVMP9nycbSz0zdp2ToAy0DZffTd0FKk/wyFtmbb0UFTD2aOg/WZJLDc+3dYjWQ15SSLDRh6LV45OHU8Dkrc2qLjiRdoh2RI+iQFakDn2OgPNgquL+3EEIpbBDA/uVoOYCbkqJNaNM/egN/s2vZ6Iq7O+BprWX/eM25xw8PMi+MU4K2sJpkcDRwoK9Wy8eeSSRIGYnpKO42g/3QI9+BRa5uD+9shG6n7xgzAPGeldUXajCThomwO8vInp6VqY8k3IeLEYoboJj5KMfJgOWUkmaoh6ZBJHnCogvSXI35jbxCxmHAbK+KdTka/Yg2MadFZdA=="
-            ]
-          }
-        ]
-      }
-                </pre>
-              </li>
-              <li>
-                <p>
-                  The <a data-cite="VC-DATA-MODEL#dfn-verifier">verifier</a> (or relying party)
-                  uses <code>kid</code> from the protected header of the JWT
-                  to identify the public key, controlled by the issuer, and uses it to verify
-                  the token.
-                </p>
-                <p>
-                  The <a data-cite="VC-DATA-MODEL#dfn-verifier">verifier</a> (or relying party)
-                  verifies the signature on the JWT.
-                  After verification, the claims the issuer has made about the subject can be reviewed or processed, 
-                  because the integrity of the claims has been protected by a digital signature verification.
-                </p>
-              </li>
-            </ol>
           </section>
         </section>
+        <section class="informative">
+        <h3>Controller Documents</h3>
+    
+        <p class="issue" data-number="160"></p>
+
+        <p>
+A <a>controller document</a> is a set of data that specifies one or more
+relationships between a <a>controller</a> and a set of data, such as a set of
+public cryptographic keys. The <a>controller document</a> SHOULD
+contain <a>verification relationships</a> that explicitly permit the use of
+certain <a>verification methods</a> for specific purposes.
+        </p>
+
+
+        <section>
+          <h2>Verification Methods</h2>
+          <p>
+A <a>controller document</a> can express <a>verification methods</a>, such as
+cryptographic <a>public keys</a>, which can be used to <a>authenticate</a> or
+authorize interactions with the <a>controller</a> or associated parties. For
+example, a cryptographic <a>public key</a> can be used as a <a>verification
+method</a> with respect to a digital signature; in such usage, it verifies that
+the signer could use the associated cryptographic private key. <a>Verification
+methods</a> might take many parameters. An example of this is a set of five
+cryptographic keys from which any three are required to contribute to a
+cryptographic threshold signature.
+          </p>
+
+          <dl>
+            <dt><dfn class="lint-ignore">verificationMethod</dfn></dt>
+            <dd>
+              <p>
+The `verificationMethod` property is OPTIONAL. If present, its value
+MUST be a <a data-cite="INFRA#ordered-set">set</a> of <a>verification
+methods</a>, where each <a>verification method</a> is expressed using a <a
+data-cite="INFRA#ordered-map">map</a>. The <a>verification method</a> <a
+data-cite="INFRA#ordered-map">map</a> MUST include the `id`,
+`type`, `controller`, and specific verification material
+properties that are determined by the value of `type` and are defined
+in <a href="#verification-material"></a>. A <a>verification method</a> MAY
+include additional properties.
+              </p>
+
+              <dl>
+                <dt>id</dt>
+                <dd>
+                  <p>
+The value of the `id` property for a <a>verification
+method</a> MUST be a <a data-cite="INFRA#string">string</a> that
+conforms to the [[URL]] syntax.
+                  </p>
+                </dd>
+                <dt>type</dt>
+                <dd>
+The value of the `type` property MUST be a <a
+data-cite="INFRA#string">string</a> that references exactly one <a>verification
+method</a> type. To maximize interoperability, the
+<a>verification method</a> type SHOULD be `JsonWebKey`.
+                </dd>
+                <dt><span id="defn-controller">controller</span></dt>
+                <dd>
+The value of the `controller` property MUST be a <a
+data-cite="INFRA#string">string</a> that conforms to the [[URL]] syntax.
+                </dd>
+                <dt><dfn class="lint-ignore">revoked</dfn></dt>
+                <dd>
+The `revoked` property is OPTIONAL. If present, its value MUST be an [[XMLSCHEMA11-2]]
+combined date and time string specifying when the <a>verification method</a>
+SHOULD cease to be used. Once the value is set, it is not expected to be updated, and
+systems depending on the value are expected to not verify any proofs associated
+with the <a>verification method</a> at or after the time of revocation.
+                </dd>
+              </dl>
+            </dd>
+          </dl>
+
+          <pre class="example nohighlight"
+            title="Example verification method structure">
+    {
+      "@context": [
+        "https://www.w3.org/ns/did/v1",
+        "https://www.w3.org/ns/credentials/v2"
+      ]
+      "id": "did:example:123456789abcdefghi",
+      <span class="comment">...</span>
+      "verificationMethod": [{
+        "id": <span class="comment">...</span>,
+        "type": <span class="comment">...</span>,
+        "controller": <span class="comment">...</span>,
+        "publicKeyJwk": <span class="comment">...</span>
+      }]
+    }
+          </pre>
+
+          <p class="note"
+            title="Verification method controller(s) and controller(s)">
+The semantics of the `controller` property are the same when the
+subject of the relationship is the <a>controller document</a> as when the subject of
+the relationship is a <a>verification method</a>, such as a cryptographic public
+key. Since a key can't control itself, and the key controller cannot be inferred
+from the <a>controller document</a>, it is necessary to explicitly express the identity
+of the controller of the key. The difference is that the value of
+`controller` for a <a>verification method</a> is <em>not</em>
+necessarily a <a>controller</a>. <a>Controllers</a> are expressed
+using the `<a>controller</a>` property at the highest level of the
+<a>controller document</a>.
+          </p>
+
+          <section>
+            <h3>Verification Material</h3>
+
+            <p>
+Verification material SHOULD be expressed in the <code>publicKeyJwk</code> property
+of a <code>JsonWebKey</code>. This key material is retrieved based on hints in the
+JOSE or COSE message envelopes, such as <code>kid</code> or <code>iss</code>. At
+the time of writing, there is no standard way to retrieve a public key in JWK or
+COSE key from a DID URL or controller document.
+            </p>
+
+
+            <p>
+A <a>verification method</a> MUST NOT contain multiple verification material
+properties for the same material. For example, expressing key material in a
+<a>verification method</a> using both `publicKeyJwk` and
+`publicKeyMultibase` at the same time is prohibited.
+            </p>
+
+            <p>
+An example of a <a>controller document</a> containing <a>verification
+methods</a> using both properties above is shown below.
+            </p>
+
+            <pre id="example-various-verification-method-types"
+              class="example nohighlight"
+              title="Verification methods using publicKeyJwk">
+    {
+      "@context": [
+        "https://www.w3.org/ns/did/v1",
+        "https://www.w3.org/ns/credentials/v2"
+      ]
+      "id": "did:example:123456789abcdefghi",
+      <span class="comment">...</span>
+      "verificationMethod": [{
+        "id": "did:example:123#_Qq0UL2Fq651Q0Fjd6TvnYE-faHiOpRlPVQcY_-tA4A",
+        "type": "JsonWebKey", <span class="comment">// external (property value)</span>
+        "controller": "did:example:123",
+        "publicKeyJwk": {
+          "crv": "Ed25519", <span class="comment">// external (property name)</span>
+          "x": "VCpo2LMLhn6iWku8MKvSLg2ZAoC-nlOyPVQaO3FxVeQ", <span class="comment">// external (property name)</span>
+          "kty": "OKP", <span class="comment">// external (property name)</span>
+          "kid": "_Qq0UL2Fq651Q0Fjd6TvnYE-faHiOpRlPVQcY_-tA4A" <span class="comment">// external (property name)</span>
+        }
+      }],
+      <span class="comment">...</span>
+    }
+            </pre>
+          </section>
+
+
+          <section>
+            <h3>JsonWebKey</h3>
+            <p>
+The JSON Web Key (JWK) data model is a specific type of <a>verification method</a>
+that uses the JWK specification [[RFC7517]] to encode key types into a
+set of parameters.
+            </p>
+
+            <p>
+When specifing a `JsonWebKey`, the object takes the following form:
+            </p>
+
+            <dl>
+              <dt>type</dt>
+              <dd>
+The value of the `type` property MUST contain the string `JsonWebKey`.
+              </dd>
+              <dt><dfn class="lint-ignore">publicKeyJwk</dfn></dt>
+              <dd>
+The `publicKeyJwk` property is REQUIRED, and its value MUST
+be a JSON Web Key that conforms to [[RFC7517]].
+It is RECOMMENDED that verification methods that use
+JWKs [[RFC7517]] to represent their <a>public keys</a> use the value of `kid` as
+their fragment identifier. It is RECOMMENDED that JWK `kid` values be set to
+the public key fingerprint [[RFC7638]]. See the first key in
+<a href="#example-various-verification-method-types"></a> for an example of a
+public key with a compound key identifier.
+              </dd>
+              <dt><dfn class="lint-ignore">secretKeyJwk</dfn></dt>
+              <dd>
+The `secretKeyJwk` property is OPTIONAL. If present, its value MUST be a <a
+data-cite="INFRA#ordered-map">map</a> representing a JSON Web Key that conforms
+to [[RFC7517]].
+              </dd>
+            </dl>
+
+            <p>
+An example of an object that conforms to this data model is provided below:
+            </p>
+
+            <pre class="example nohighlight"
+              title="JSON Web Key encoding of an secp384r1 (P-384) public key">
+{
+  "id": "did:example:123456789abcdefghi#key-1",
+  "type": "JsonWebKey",
+  "controller": "did:example:123456789abcdefghi",
+  "publicKeyJwk": {
+      "kid": "key-1",
+      "kty": "EC",
+      "crv": "P-384",
+      "alg": "ES384",
+      "x": "1F14JSzKbwxO-Heqew5HzEt-0NZXAjCu8w-RiuV8_9tMiXrSZdjsWqi4y86OFb5d",
+      "y": "dnd8yoq-NOJcBuEYgdVVMmSxonXg-DU90d7C4uPWb_Lkd4WIQQEH0DyeC2KUDMIU"
+    }
+}
+            </pre>
+
+            <p>
+In the example above, the `publicKeyJwk` value contains the JSON Web Key.
+The `kty` property encodes the key type of "OKP", which means
+"Octet string key pairs". The `alg` property identifies the algorithm intended
+for use with the public key. Although `alg` is optional, it is RECOMMENDED to be included to avoid security issues arising from using the same key with multiple algorithms. The `crv` property identifies the particular
+curve type of the public key. The `kid` property is a hint used to help discover the key; 
+if present, the `kid` value SHOULD match, or be included in the
+`id` property of the encapsulating `JsonWebKey` object, as part of the path, query or fragment of the URL. Finally, the `x`
+property specifies the point on the Ed25519 curve that is associated with the
+public key.
+            </p>
+
+            <p>
+The `publicKeyJwk` property MUST NOT contain any property marked as
+"Private" in any registry contained in the JOSE Registries [[JOSE-REGISTRIES]], including "d".
+            </p>
+
+            <p>
+The JSON Web Key data model is also capable of encoding <em>secret keys</em>, sometimes
+referred to as <em>private keys</em>.
+            </p>
+
+            <pre class="example nohighlight"
+              title="JSON Web Key encoding of a secp384r1 (P-384) secret key">
+{
+  "id": "did:example:123456789abcdefghi#key-1",
+  "type": "JsonWebKey",
+  "controller": "did:example:123456789abcdefghi",
+  "secretKeyJwk": {
+      "kty": "EC",
+      "crv": "P-384",
+      "alg": "ES384",
+      "d": "fGwges0SX1mj4eZamUCL4qtZijy9uT15fI4gKTuRvre4Kkoju2SHM4rlFOeKVraH",
+      "x": "1F14JSzKbwxO-Heqew5HzEt-0NZXAjCu8w-RiuV8_9tMiXrSZdjsWqi4y86OFb5d",
+      "y": "dnd8yoq-NOJcBuEYgdVVMmSxonXg-DU90d7C4uPWb_Lkd4WIQQEH0DyeC2KUDMIU"
+    }
+}
+            </pre>
+
+            <p>
+The private key example above is almost identical to the previous example of the
+public key, except that the information is stored in the `secretKeyJwk` property
+(rather than the `publicKeyJwk`), and the private key value is encoded in the `d`
+property thereof (alongside the `x` property, which still specifies the point on
+the secp384r1 curve that is associated with the public key).
+            </p>
+
+          </section>
+
+          <section>
+            <h3>Referring to Verification Methods</h3>
+            <p>
+<a>Verification methods</a> can be referenced from properties
+associated with various <a>verification relationships</a> as described in <a
+href="#verification-relationships"></a>. Referencing <a>verification methods</a>
+allows them to be used by more than one <a>verification relationship</a>.
+            </p>
+
+            <p>
+If the value of a <a>verification method</a> property is a
+URL <a data-cite="INFRA#string">string</a>, the <a>verification method</a> has
+been included by reference and its properties will need to be retrieved from
+elsewhere in the <a>controller document</a> or from another <a>controller document</a>. This
+is done by dereferencing the URL and searching the resulting <a>resource</a> for a
+<a>verification method</a> <a data-cite="INFRA#ordered-map">map</a> with an
+`id` property whose value matches the URL.
+            </p>
+
+            <pre class="example nohighlight"
+            title="Referencing verification methods">
+    {
+<span class="comment">...</span>
+
+      "authentication": [
+        <span class="comment">// this key is referenced and might be used by</span>
+        <span class="comment">// more than one verification relationship</span>
+        "did:example:123456789abcdefghi#keys-1",
+      ],
+
+<span class="comment">...</span>
+    }
+            </pre>
+          </section>
+        </section>
+
+        <section>
+          <h2>Verification Relationships</h2>
+
+          <p>
+A <a>verification relationship</a> expresses the relationship between the
+<a>controller</a> and a <a>verification method</a>.
+          </p>
+          <p>
+Different <a>verification relationships</a> enable the associated
+<a>verification methods</a> to be used for different purposes. It is up to a
+<em>verifier</em> to ascertain the validity of a verification attempt by
+checking that the <a>verification method</a> used is contained in the
+appropriate <a>verification relationship</a> property of the
+<a>controller document</a>.
+          </p>
+          <p>
+The <a>verification relationship</a> between the <a>controller</a> and the
+<a>verification method</a> is explicit in the <a>controller document</a>.
+<a>Verification methods</a> that are not associated with a particular
+<a>verification relationship</a> cannot be used for that <a>verification
+relationship</a>.
+          </p>
+          <p>
+The <a>controller document</a> does not express revoked keys using a <a>verification
+relationship</a>. If a referenced verification method is not in the latest
+<a>controller document</a> used to dereference it, then that verification method is
+considered invalid or revoked.
+          </p>
+          <p>
+The following sections define several useful <a>verification relationships</a>.
+A <a>controller document</a> MAY include any of these, or other properties, to
+express a specific <a>verification relationship</a>. In order to maximize global
+interoperability, any such properties used SHOULD be registered in the
+Data Integrity Specification Registries [TBD: DIS-REGISTRIES].
+          </p>
+
+          <section>
+            <h2>Authentication</h2>
+
+            <p>
+The `authentication` <a>verification relationship</a> is used to
+specify how the <a>controller</a> is expected to be <a>authenticated</a>, for
+purposes such as logging into a website or engaging in any sort of
+challenge-response protocol.
+            </p>
+
+            <dl>
+              <dt id="defn-authentication">authentication</dt>
+              <dd>
+The `authentication` property is OPTIONAL. If present, its
+value MUST be a <a data-cite="INFRA#ordered-set">set</a> of one or more
+<a>verification methods</a>. Each <a>verification method</a> MAY be embedded or
+referenced.
+              </dd>
+            </dl>
+
+            <pre class="example nohighlight" title="Authentication property
+                          containing three verification methods">
+    {
+      "@context": [
+        "https://www.w3.org/ns/did/v1",
+        "https://www.w3.org/ns/credentials/v2"
+      ],
+      "id": "did:example:123456789abcdefghi",
+      <span class="comment">...</span>
+      "authentication": [
+        <span class="comment">// this method can be used to authenticate as did:...fghi</span>
+        "did:example:123456789abcdefghi#keys-1",
+      <span class="comment">...</span>
+    }
+            </pre>
+
+            <p>
+If authentication is established, it is up to the application to decide what to
+do with that information.
+            </p>
+            <p>
+This is useful to any <em>authentication verifier</em> that needs to check to
+see whether an entity that is attempting to <a>authenticate</a> is, in fact,
+presenting a valid proof of authentication. When a <em>verifier</em> receives
+some data (in some protocol-specific format) that contains a proof that was made
+for the purpose of "authentication", and that says that an entity is identified
+by the `id`, then that <em>verifier</em> checks to ensure that the proof can be
+verified using a <a>verification method</a> (e.g., <a>public key</a>) listed
+under `<a>authentication</a>` in the <a>controller document</a>.
+            </p>
+            <p>
+Note that the <a>verification method</a> indicated by the
+`<a>authentication</a>` property of a <a>controller document</a> can
+only be used to <a>authenticate</a> the <a>controller</a>. To
+<a>authenticate</a> a different <a>controller</a>, the entity associated with
+the value of `controller` needs to <a>authenticate</a> with its
+<em>own</em> <a>controller document</a> and associated
+`<a>authentication</a>` <a>verification relationship</a>.
+            </p>
+          </section>
+
+          <section>
+            <h2>Assertion</h2>
+
+            <p>
+The `assertionMethod` <a>verification relationship</a> is used to
+specify how the <a>controller</a> is expected to express claims, such as for
+the purposes of issuing a Verifiable Credential [[?VC-DATA-MODEL-2.0]].
+            </p>
+
+            <dl>
+              <dt>assertionMethod</dt>
+              <dd>
+The `assertionMethod` property is OPTIONAL. If present, its
+value MUST be a <a data-cite="INFRA#ordered-set">set</a> of
+one or more <a>verification methods</a>. Each <a>verification method</a> MAY be
+embedded or referenced.
+              </dd>
+            </dl>
+
+            <p>
+This property is useful, for example, during the processing of a <a>verifiable
+credential</a> by a verifier.
+            </p>
+
+            <pre class="example nohighlight" title="Assertion method property">
+    {
+      "@context": [
+        "https://www.w3.org/ns/did/v1",
+        "https://www.w3.org/ns/credentials/v2"
+      ],
+      "id": "did:example:123456789abcdefghi",
+      <span class="comment">...</span>
+      "assertionMethod": [
+        <span class="comment">// this method can be used to assert statements as did:...fghi</span>
+        "did:example:123456789abcdefghi#keys-1",
+      <span class="comment">...</span>
+    }
+            </pre>
+          </section>
+
+
+
+        </section>
       </section>
+      </section>
+
     <section class="normative">
-      <h2>Protected Header Parameters</h2>
+      <h2>JOSE Header Parameters</h2>
       <p>
         The normative statements in <a data-cite="RFC7515#section-4.1">Registered Header Parameter
           Names</a>
@@ -581,7 +942,7 @@
         apply to securing credentials and presentations.
       </p>
       <p>
-        The data model for the protected header is JSON
+        The data model for the JOSE Header is JSON
         (application/json), not JSON-LD (application/ld+json).
       </p>
       <p>
@@ -590,30 +951,35 @@
         apply to securing claims about a credential subject.
       </p>
       <p>
-        When replicating claims from the claimset to the header, it is
-        RECOMMENDED to use [[RFC7519]], <a href="https://www.iana.org/assignments/jose/jose.xhtml">IANA
-          Assignments for Header Parameters</a>, and <a href="https://www.iana.org/assignments/jwt/jwt.xhtml">IANA
-          Assignments for JSON Web Token (JWT)</a>
-        to identify any reserved claims that might be confused with
-        members of the [[VC-DATA-MODEL]. This includes but is not
+        When replicating claims from the JWT Claims Set to Header Parameters, it is
+        RECOMMENDED to use [[RFC7519]],
+	the IANA <a href="https://www.iana.org/assignments/jwt/jwt.xhtml">JSON Web Token Claims</a> registry, and
+	the IANA <a href="https://www.iana.org/assignments/jose/jose.xhtml">JSON Web Signature and Encryption Header Parameters</a> registry
+        to identify any claims that might be confused with
+        members defined by the [[VC-DATA-MODEL]. These include but are not
         limited to: <code>iss</code>, <code>kid</code>,
         <code>alg</code>, <code>iat</code>,
-        <code>exp</code> and <code>cnf</code>.
+        <code>exp</code>, and <code>cnf</code>.
       </p>
       <p>
-        The <a href="#registered-claim-names">registered claim</a> names <code>vc</code> and <code>vp</code>
+        When the <code>iat</code> and/or <code>exp</code> JWT claims are present,
+        they represent the issuance and expiration time of the signature, respectively.
+        Note that these are different from the <code>validFrom</code> and <code>validUntil</code> properties
+        defined in <a data-cite="VC-DATA-MODEL#validity-period">Validity Period</a>
+        that represent the validity of the data that is being secured.
+      </p>
+      <p>
+        The JWT Claim Names <code>vc</code> and <code>vp</code>
         MUST NOT be present as header parameters.
       </p>
       <p>
         When present, members of the header are to be interpreted and
-        processed according to
-        <a href="https://www.iana.org/assignments/jwt/jwt.xhtml">IANA
-          Assignments for JSON Web Token (JWT)</a> and
-        <a href="https://www.iana.org/assignments/jose/jose.xhtml">IANA
-          Assignments for JSON Object Signing and Encryption (JOSE)</a>.
+        processed according to the corresponding definitions found in
+	the IANA <a href="https://www.iana.org/assignments/jose/jose.xhtml">JSON Web Signature and Encryption Header Parameters</a> registry and
+	the IANA <a href="https://www.iana.org/assignments/jwt/jwt.xhtml">JSON Web Token Claims</a> registry.
       </p>
       <p>
-        Additional members may be present, if they are not understood,
+        Additional members may be present. If they are not understood,
         they MUST be ignored.
       </p>
     </section>
@@ -623,15 +989,15 @@
     <section class="normative">
       <h2>Securing Verifiable Credentials</h2>
       <p>The <a data-cite="VC-DATA-MODEL#proof-formats"></a> describes the approach taken by JSON Web
-        Tokens to secure claimsets as <i>applying an
+        Tokens to secure JWT Claims Sets as <i>applying an
         <code>external proof</code></i>.
       </p>
       <p>The normative statements in <a data-cite="VC-DATA-MODEL#securing-verifiable-credentials">Securing
           Verifiable Credentials</a> apply to securing
         <code>application/vc+ld+json</code> and
         <code>application/vp+ld+json</code>
-        as <code>application/vc+ld+json+jwt</code> and
-        <code>application/vp+ld+json+jwt</code>.
+        as <code>application/vc+ld+json+sd-jwt</code> and
+        <code>application/vp+ld+json+sd-jwt</code>.
       </p>
       <p>For clarity, these requirements are repeated here:</p>
       <ul>
@@ -687,23 +1053,23 @@
           Requirements</a>.
       </p>
       <p>
-        Accordingly, Issuers, Holders and Verifiers MUST understand the
+        Accordingly, Issuers, Holders, and Verifiers MUST understand the
         JSON Web Token header parameter
         <code>"alg": "none"</code> when securing the [[VC-DATA-MODEL]]
         with JSON Web Tokens.
       </p>
       <p>
         When content types from the [[VC-DATA-MODEL]] are secured using
-        JSON Web Tokens, the header parameter <code>"alg":
-        "none"</code>, MUST be used to communicate that a claimset (a
+        JSON Web Tokens, the header parameter <code>"alg": "none"</code>,
+	MUST be used to communicate that a JWT Claims Set (a
         Verifiable Credential or a Verifiable Presentation) has no
         integrity protection.
       </p>
       <p>
-        When a JSON Web Token claimset (a Verifiable Credential or a
+        When a JWT Claims Set (a Verifiable Credential or a
         Verifiable Presentation) contains
         <code>proof</code>, and the JSON Web Token header contains
-        <code>"alg": "none"</code>, the claimset MUST be considered to
+        <code>"alg": "none"</code>, the JWT Claims Set MUST be considered to
         have no integrity protection.
       </p>
       <p class="advisement">
@@ -711,7 +1077,7 @@
         required to be secured or integrity protected or to contain a
         <code>proof</code> member.
       </p>
-      <p>Issuers, Holders and Verifiers MUST ignore all claimsets that
+      <p>Issuers, Holders, and Verifiers MUST ignore all JWT Claims Sets that
         have no integrity protection.</p>
     </section>
   
@@ -722,111 +1088,13 @@
 
     <section>
     <h2>Media Types</h2>
-    <section id="vc-ld-jwt-media-type">
-      <h2><code>application/vc+ld+json+jwt</code></h2>
-      <p>
-        This specification registers the
-        <code>application/vc+ld+json+jwt</code> Media Type for
-        identifying a Verifiable Credential that has been secured
-        using a <a data-cite="rfc7519#section-3">JWT</a>.
-      </p>
-      <table>
-        <tr>
-          <td>Type name: </td>
-          <td>application</td>
-        </tr>
-        <tr>
-          <td>Subtype name: </td>
-          <td>vc+ld+json+jwt</td>
-        </tr>
-        <tr>
-          <td>Required parameters: </td>
-          <td>None</td>
-        </tr>
-        <tr>
-          <td>Encoding considerations: </td>
-          <td>
-            <code>application/vc+ld+json+jwt</code> values are encoded as a
-            series of base64url encoded values (some of which may be the
-            empty string) each separated from the next by a single
-            period ('.') character.
-          </td>
-        </tr>
-        <tr>
-          <td>Security considerations: </td>
-          <td>
-            <p>As defined in this specification. See also the security
-              considerations in [[RFC7519]].</p>
-          </td>
-        </tr>
-        <tr>
-          <td>Contact: </td>
-          <td>
-            W3C Verifiable Credentials Working Group <a href="mailto:public-vc-wg@w3.org">public-vc-wg@w3.org</a>
-          </td>
-        </tr>
-      </table>
-    </section>
-    <section id="vp-ld-jwt-media-type">
-      <h2><code>application/vp+ld+json+jwt</code></h2>
-      <p>
-        This specification registers the
-        <code>application/vp+ld+json+jwt</code> Media Type for
-        identifying a Verifiable Presentation that has been secured
-        using a <a data-cite="rfc7519#section-3">JWT</a>.
-      </p>
-      <table>
-        <tr>
-          <td>Type name: </td>
-          <td>application</td>
-        </tr>
-        <tr>
-          <td>Subtype name: </td>
-          <td>vp+ld+json+jwt</td>
-        </tr>
-        <tr>
-          <td>Required parameters: </td>
-          <td>None</td>
-        </tr>
-        <tr>
-          <td>Encoding considerations: </td>
-          <td>
-            <code>application/vp+ld+json+jwt</code> values are encoded as a
-            series of base64url encoded values (some of which may be the
-            empty string) each separated from the next by a single
-            period ('.') character.
-          </td>
-        </tr>
-        <tr>
-          <td>Security considerations: </td>
-          <td>
-            <p>As defined in this specification. See also the security
-              considerations in [[RFC7519]].</p>
-            <p>
-              Be advised, per the [[VC-DATA-MODEL]], verifiable
-              presentations are not required to be secured.
-            </p>
-            <p>
-              This "typ" value might be paired with "alg: none", in
-              headers.
-            </p>
-          </td>
-        </tr>
-        <tr>
-          <td>Contact: </td>
-          <td>
-            W3C Verifiable Credentials Working Group <a href="mailto:public-vc-wg@w3.org">public-vc-wg@w3.org</a>
-          </td>
-        </tr>
-      </table>
-    </section>
     <section id="vc-ld-sd-jwt-media-type">
       <h2><code>application/vc+ld+json+sd-jwt</code></h2>
       <p>
         This specification registers the
         <code>application/vc+ld+json+sd-jwt</code> Media Type specifically for
         identifying a <a data-cite="SD-JWT"></a>
-        conforming to the Verifiable Credentials.
+        conforming to the Verifiable Credential Data Model.
       </p>
       <table>
         <tr>
@@ -836,6 +1104,50 @@
         <tr>
           <td>Subtype name: </td>
           <td>vc+ld+json+sd-jwt</td>
+        </tr>
+        <tr>
+          <td>Required parameters: </td>
+          <td>None</td>
+        </tr>
+        <tr>
+          <td>Encoding considerations: </td>
+          <td>
+            binary; application/sd-jwt values are a series of base64url-encoded values 
+            (some of which may be the empty string) separated by period ('.') or tilde ('~') characters.
+          </td>
+        </tr>
+        <tr>
+          <td>Security considerations: </td>
+          <td>
+            <p>As defined in this specification. See also the security
+            considerations in <a data-cite="SD-JWT"></a>.</p>
+          </td>
+        </tr>
+        <tr>
+          <td>Contact: </td>
+          <td>
+            W3C Verifiable Credentials Working Group <a
+            href="mailto:public-vc-wg@w3.org">public-vc-wg@w3.org</a>
+          </td>
+        </tr>
+      </table>
+    </section>
+    <section id="vp-ld-sd-jwt-media-type">
+      <h2><code>application/vp+ld+json+sd-jwt</code></h2>
+      <p>
+        This specification registers the
+        <code>application/vp+ld+json+sd-jwt</code> Media Type specifically for
+        identifying a <a data-cite="SD-JWT"></a>
+        conforming to the Verifiable Presentations.
+      </p>
+      <table>
+        <tr>
+          <td>Type name: </td>
+          <td>application</td>
+        </tr>
+        <tr>
+          <td>Subtype name: </td>
+          <td>vp+ld+json+sd-jwt</td>
         </tr>
         <tr>
           <td>Required parameters: </td>
@@ -1041,7 +1353,7 @@
     <section class="informative">
       <h2>Accessibility</h2>
       <p>
-        When implementing the VC-JWT specification, it is crucial for
+        When implementing this specification, it is crucial for
         technical implementers to consider various accessibility
         factors. Ignoring accessibility concerns renders the information
         unusable for a significant portion of the population. To ensure
@@ -1150,15 +1462,14 @@
     }
   }],
   "authentication": ["#subject-authenticaton"],
-  "assertionMethod": ["#credential-issuance"],
-  "keyAgreement": ["#key-agreement"]
+  "assertionMethod": ["#credential-issuance"]
 }
       </pre>
 
     </section>
     <section>
       <h3>Credentials</h3>
-      <pre class="example vc-jose-cose-vc-example" title="A revocable credential with multiple subjects" data-alg="ES256" data-typ="vc+ld+json+jwt" data-cty="vc+ld+json">
+      <pre class="example vc-jose-cose-vc-example" title="A revocable credential with multiple subjects" data-alg="ES256" data-typ="vc+ld+json+sd-jwt" data-cty="vc+ld+json">
 {
   "@context": ["https://www.w3.org/ns/credentials/v2",
     "https://www.w3.org/ns/credentials/examples/v2"
@@ -1214,7 +1525,7 @@
         Presentations
       </h2>
 
-      <pre class="example vc-jose-cose-vp-example" title="Presentation" data-alg="ES256" data-typ="vp+ld+json+jwt" data-cty="vp+ld+json">
+      <pre class="example vc-jose-cose-vp-example" title="Presentation" data-alg="ES256" data-typ="vp+ld+json+sd-jwt" data-cty="vp+ld+json">
 {
   "@context": ["https://www.w3.org/ns/credentials/v2"],
   "type": ["VerifiablePresentation"],
@@ -1232,11 +1543,11 @@
         "id": "https://subject.vendor.example"
       }
     },
-    "https://vendor.example/credentials/42", "did:example:123",
+    "https://vendor.example/credentials/42", 
+    "did:example:123",
     "urn:uuid:01ec9426-c175-4e39-a006-d30050e28214",
     "urn:ietf:params:oauth:jwk-thumbprint:sha-256:_Fpfe27AuGmEljZE9s2lw2UH-qrZLRFNrWbJrWIe4SI",
-    "data:application/vc+ld+json;base64,eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiXSwidHlwZSI6WyJWZXJpZmlhYmxlQ3JlZGVudGlhbCJdLCJpc3N1ZXIiOiJkaWQ6andrOmV5SnJhV1FpT2lKMWNtNDZhV1YwWmpwd1lYSmhiWE02YjJGMWRHZzZhbmRyTFhSb2RXMWljSEpwYm5RNmMyaGhMVEkxTmpwdlFtUm1kbVpET1hoNk1GOUJVWFpSTjNZMU1YbERXbDl6ZUdwNU56VkNUSEpJZWsxT1Jqa3lPV1U0SWl3aWEzUjVJam9pVDB0UUlpd2lZM0oySWpvaVJXUXlOVFV4T1NJc0ltRnNaeUk2SWtWa1JGTkJJaXdpZUNJNklqTmljbU5zYjBJNGFEUk5XbFZJYms5UVVHbGtTbXd0U2pkdVVsRkpXSFJUYUZwM1oyNW1jbHAxVDI4aWZRIiwidmFsaWRGcm9tIjoiMjAyMy0wNi0wN1QyMToxNDoxNC4xNDhaIiwiY3JlZGVudGlhbFN1YmplY3QiOnsiaWQiOiJodHRwczovL3N1YmplY3QudmVuZG9yLmV4YW1wbGUifX0=",
-    "data:application/vc+ld+json+jwt;base64,ZXlKaGJHY2lPaUpGWkVSVFFTSXNJbWx6Y3lJNkltUnBaRHBxZDJzNlpYbEtjbUZYVVdsUGFVb3hZMjAwTm1GWFZqQmFhbkIzV1ZoS2FHSllUVFppTWtZeFpFZG5ObUZ1WkhKTVdGSnZaRmN4YVdOSVNuQmlibEUyWXpKb2FFeFVTVEZPYW5CMlVXMVNiV1J0V2tSUFdHZzJUVVk1UWxWWVdsSk9NMWt4VFZoc1JGZHNPWHBsUjNBMVRucFdRMVJJU2tsbGF6RlBVbXByZVU5WFZUUkphWGRwWVROU05VbHFiMmxVTUhSUlNXbDNhVmt6U2pKSmFtOXBVbGRSZVU1VVZYaFBVMGx6U1cxR2MxcDVTVFpKYTFaclVrWk9Ra2xwZDJsbFEwazJTV3BPYVdOdFRuTmlNRWswWVVSU1RsZHNWa2xpYXpsUlZVZHNhMU50ZDNSVGFtUjFWV3hHU2xkSVVsUmhSbkF6V2pJMWJXTnNjREZVTWpocFpsRWlMQ0pyYVdRaU9pSWpNQ0lzSW5SNWNDSTZJblpqSzJ4a0sycDNkQ0lzSW1saGRDSTZNVFk0TmpJMU1UVTNOSDAuZXlKQVkyOXVkR1Y0ZENJNld5Sm9kSFJ3Y3pvdkwzZDNkeTUzTXk1dmNtY3Zibk12WTNKbFpHVnVkR2xoYkhNdmRqSWlYU3dpZEhsd1pTSTZXeUpXWlhKcFptbGhZbXhsUTNKbFpHVnVkR2xoYkNKZExDSnBjM04xWlhJaU9pSmthV1E2YW5kck9tVjVTbkpoVjFGcFQybEtNV050TkRaaFYxWXdXbXB3ZDFsWVNtaGlXRTAyWWpKR01XUkhaelpoYm1SeVRGaFNiMlJYTVdsalNFcHdZbTVSTm1NeWFHaE1WRWt4VG1wd2RsRnRVbTFrYlZwRVQxaG9OazFHT1VKVldGcFNUak5aTVUxWWJFUlhiRGw2WlVkd05VNTZWa05VU0VwSlpXc3hUMUpxYTNsUFYxVTBTV2wzYVdFelVqVkphbTlwVkRCMFVVbHBkMmxaTTBveVNXcHZhVkpYVVhsT1ZGVjRUMU5KYzBsdFJuTmFlVWsyU1d0V2ExSkdUa0pKYVhkcFpVTkpOa2xxVG1samJVNXpZakJKTkdGRVVrNVhiRlpKWW1zNVVWVkhiR3RUYlhkMFUycGtkVlZzUmtwWFNGSlVZVVp3TTFveU5XMWpiSEF4VkRJNGFXWlJJaXdpZG1Gc2FXUkdjbTl0SWpvaU1qQXlNeTB3Tmkwd04xUXlNVG94TkRveE5DNHhORGhhSWl3aVkzSmxaR1Z1ZEdsaGJGTjFZbXBsWTNRaU9uc2lhV1FpT2lKb2RIUndjem92TDNOMVltcGxZM1F1ZG1WdVpHOXlMbVY0WVcxd2JHVWlmWDAubmczZlpDQXJyNUYwb1hOS1J1UlFNUXYtdnh4YlozUWJKVkJpcU1QUlVnSEFiSDVkMXptYjhLeUNkNnlVS3IxbmlsZmZiZ2pGUmRpRjFsWUdNRGNhQ0E="
+    "data:application/vc+ld+json;base64,eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiXSwidHlwZSI6WyJWZXJpZmlhYmxlQ3JlZGVudGlhbCJdLCJpc3N1ZXIiOiJkaWQ6andrOmV5SnJhV1FpT2lKMWNtNDZhV1YwWmpwd1lYSmhiWE02YjJGMWRHZzZhbmRyTFhSb2RXMWljSEpwYm5RNmMyaGhMVEkxTmpwdlFtUm1kbVpET1hoNk1GOUJVWFpSTjNZMU1YbERXbDl6ZUdwNU56VkNUSEpJZWsxT1Jqa3lPV1U0SWl3aWEzUjVJam9pVDB0UUlpd2lZM0oySWpvaVJXUXlOVFV4T1NJc0ltRnNaeUk2SWtWa1JGTkJJaXdpZUNJNklqTmljbU5zYjBJNGFEUk5XbFZJYms5UVVHbGtTbXd0U2pkdVVsRkpXSFJUYUZwM1oyNW1jbHAxVDI4aWZRIiwidmFsaWRGcm9tIjoiMjAyMy0wNi0wN1QyMToxNDoxNC4xNDhaIiwiY3JlZGVudGlhbFN1YmplY3QiOnsiaWQiOiJodHRwczovL3N1YmplY3QudmVuZG9yLmV4YW1wbGUifX0="
   ]
 }
       </pre>
@@ -1245,350 +1556,20 @@
 
     <section>
       <h3>Data URIs</h3>
-      <pre class="example" title="JSON-LD Credential">
+      <pre class="example" title="JSON-LD Verifiable Credential">
 data:application/vc+ld+json;base64,eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiXSwidHlwZSI6WyJWZXJpZmlhYmxlQ3JlZGVudGlhbCJdLCJpc3N1ZXIiOiJkaWQ6andrOmV5SnJhV1FpT2lKMWNtNDZhV1YwWmpwd1lYSmhiWE02YjJGMWRHZzZhbmRyTFhSb2RXMWljSEpwYm5RNmMyaGhMVEkxTmpwdlFtUm1kbVpET1hoNk1GOUJVWFpSTjNZMU1YbERXbDl6ZUdwNU56VkNUSEpJZWsxT1Jqa3lPV1U0SWl3aWEzUjVJam9pVDB0UUlpd2lZM0oySWpvaVJXUXlOVFV4T1NJc0ltRnNaeUk2SWtWa1JGTkJJaXdpZUNJNklqTmljbU5zYjBJNGFEUk5XbFZJYms5UVVHbGtTbXd0U2pkdVVsRkpXSFJUYUZwM1oyNW1jbHAxVDI4aWZRIiwidmFsaWRGcm9tIjoiMjAyMy0wNi0wN1QyMToxNDoxNC4xNDhaIiwiY3JlZGVudGlhbFN1YmplY3QiOnsiaWQiOiJodHRwczovL3N1YmplY3QudmVuZG9yLmV4YW1wbGUifX0=
-      </pre>
-
-      <pre class="example" title="JWT Credential">
-data:application/vc+ld+json+jwt;base64,ZXlKaGJHY2lPaUpGWkVSVFFTSXNJbWx6Y3lJNkltUnBaRHBxZDJzNlpYbEtjbUZYVVdsUGFVb3hZMjAwTm1GWFZqQmFhbkIzV1ZoS2FHSllUVFppTWtZeFpFZG5ObUZ1WkhKTVdGSnZaRmN4YVdOSVNuQmlibEUyWXpKb2FFeFVTVEZPYW5CMlVXMVNiV1J0V2tSUFdHZzJUVVk1UWxWWVdsSk9NMWt4VFZoc1JGZHNPWHBsUjNBMVRucFdRMVJJU2tsbGF6RlBVbXByZVU5WFZUUkphWGRwWVROU05VbHFiMmxVTUhSUlNXbDNhVmt6U2pKSmFtOXBVbGRSZVU1VVZYaFBVMGx6U1cxR2MxcDVTVFpKYTFaclVrWk9Ra2xwZDJsbFEwazJTV3BPYVdOdFRuTmlNRWswWVVSU1RsZHNWa2xpYXpsUlZVZHNhMU50ZDNSVGFtUjFWV3hHU2xkSVVsUmhSbkF6V2pJMWJXTnNjREZVTWpocFpsRWlMQ0pyYVdRaU9pSWpNQ0lzSW5SNWNDSTZJblpqSzJ4a0sycDNkQ0lzSW1saGRDSTZNVFk0TmpJMU1UVTNOSDAuZXlKQVkyOXVkR1Y0ZENJNld5Sm9kSFJ3Y3pvdkwzZDNkeTUzTXk1dmNtY3Zibk12WTNKbFpHVnVkR2xoYkhNdmRqSWlYU3dpZEhsd1pTSTZXeUpXWlhKcFptbGhZbXhsUTNKbFpHVnVkR2xoYkNKZExDSnBjM04xWlhJaU9pSmthV1E2YW5kck9tVjVTbkpoVjFGcFQybEtNV050TkRaaFYxWXdXbXB3ZDFsWVNtaGlXRTAyWWpKR01XUkhaelpoYm1SeVRGaFNiMlJYTVdsalNFcHdZbTVSTm1NeWFHaE1WRWt4VG1wd2RsRnRVbTFrYlZwRVQxaG9OazFHT1VKVldGcFNUak5aTVUxWWJFUlhiRGw2WlVkd05VNTZWa05VU0VwSlpXc3hUMUpxYTNsUFYxVTBTV2wzYVdFelVqVkphbTlwVkRCMFVVbHBkMmxaTTBveVNXcHZhVkpYVVhsT1ZGVjRUMU5KYzBsdFJuTmFlVWsyU1d0V2ExSkdUa0pKYVhkcFpVTkpOa2xxVG1samJVNXpZakJKTkdGRVVrNVhiRlpKWW1zNVVWVkhiR3RUYlhkMFUycGtkVlZzUmtwWFNGSlVZVVp3TTFveU5XMWpiSEF4VkRJNGFXWlJJaXdpZG1Gc2FXUkdjbTl0SWpvaU1qQXlNeTB3Tmkwd04xUXlNVG94TkRveE5DNHhORGhhSWl3aVkzSmxaR1Z1ZEdsaGJGTjFZbXBsWTNRaU9uc2lhV1FpT2lKb2RIUndjem92TDNOMVltcGxZM1F1ZG1WdVpHOXlMbVY0WVcxd2JHVWlmWDAubmczZlpDQXJyNUYwb1hOS1J1UlFNUXYtdnh4YlozUWJKVkJpcU1QUlVnSEFiSDVkMXptYjhLeUNkNnlVS3IxbmlsZmZiZ2pGUmRpRjFsWUdNRGNhQ0E=
       </pre>
 
       <pre class="example" title="JSON-LD Verifiable Presentation">
 data:application/vp+ld+json+json;base64,eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiXSwidHlwZSI6WyJWZXJpZmlhYmxlQ3JlZGVudGlhbCJdLCJpc3N1ZXIiOiJkaWQ6andrOmV5SnJhV1FpT2lKMWNtNDZhV1YwWmpwd1lYSmhiWE02YjJGMWRHZzZhbmRyTFhSb2RXMWljSEpwYm5RNmMyaGhMVEkxTmpwdlFtUm1kbVpET1hoNk1GOUJVWFpSTjNZMU1YbERXbDl6ZUdwNU56VkNUSEpJZWsxT1Jqa3lPV1U0SWl3aWEzUjVJam9pVDB0UUlpd2lZM0oySWpvaVJXUXlOVFV4T1NJc0ltRnNaeUk2SWtWa1JGTkJJaXdpZUNJNklqTmljbU5zYjBJNGFEUk5XbFZJYms5UVVHbGtTbXd0U2pkdVVsRkpXSFJUYUZwM1oyNW1jbHAxVDI4aWZRIiwidmFsaWRGcm9tIjoiMjAyMy0wNi0wN1QyMToxNDoxNC4xNDhaIiwiY3JlZGVudGlhbFN1YmplY3QiOnsiaWQiOiJodHRwczovL3N1YmplY3QudmVuZG9yLmV4YW1wbGUifX0=
       </pre>
-
-      <pre class="example" title="JWT Presentation">
-data:application/vp+ld+json+jwt;base64,ZXlKaGJHY2lPaUpGWkVSVFFTSXNJbWx6Y3lJNkltUnBaRHBxZDJzNlpYbEtjbUZYVVdsUGFVb3hZMjAwTm1GWFZqQmFhbkIzV1ZoS2FHSllUVFppTWtZeFpFZG5ObUZ1WkhKTVdGSnZaRmN4YVdOSVNuQmlibEUyWXpKb2FFeFVTVEZPYW5CMlVXMVNiV1J0V2tSUFdHZzJUVVk1UWxWWVdsSk9NMWt4VFZoc1JGZHNPWHBsUjNBMVRucFdRMVJJU2tsbGF6RlBVbXByZVU5WFZUUkphWGRwWVROU05VbHFiMmxVTUhSUlNXbDNhVmt6U2pKSmFtOXBVbGRSZVU1VVZYaFBVMGx6U1cxR2MxcDVTVFpKYTFaclVrWk9Ra2xwZDJsbFEwazJTV3BPYVdOdFRuTmlNRWswWVVSU1RsZHNWa2xpYXpsUlZVZHNhMU50ZDNSVGFtUjFWV3hHU2xkSVVsUmhSbkF6V2pJMWJXTnNjREZVTWpocFpsRWlMQ0pyYVdRaU9pSWpNQ0lzSW5SNWNDSTZJblpqSzJ4a0sycDNkQ0lzSW1saGRDSTZNVFk0TmpJMU1UVTNOSDAuZXlKQVkyOXVkR1Y0ZENJNld5Sm9kSFJ3Y3pvdkwzZDNkeTUzTXk1dmNtY3Zibk12WTNKbFpHVnVkR2xoYkhNdmRqSWlYU3dpZEhsd1pTSTZXeUpXWlhKcFptbGhZbXhsUTNKbFpHVnVkR2xoYkNKZExDSnBjM04xWlhJaU9pSmthV1E2YW5kck9tVjVTbkpoVjFGcFQybEtNV050TkRaaFYxWXdXbXB3ZDFsWVNtaGlXRTAyWWpKR01XUkhaelpoYm1SeVRGaFNiMlJYTVdsalNFcHdZbTVSTm1NeWFHaE1WRWt4VG1wd2RsRnRVbTFrYlZwRVQxaG9OazFHT1VKVldGcFNUak5aTVUxWWJFUlhiRGw2WlVkd05VNTZWa05VU0VwSlpXc3hUMUpxYTNsUFYxVTBTV2wzYVdFelVqVkphbTlwVkRCMFVVbHBkMmxaTTBveVNXcHZhVkpYVVhsT1ZGVjRUMU5KYzBsdFJuTmFlVWsyU1d0V2ExSkdUa0pKYVhkcFpVTkpOa2xxVG1samJVNXpZakJKTkdGRVVrNVhiRlpKWW1zNVVWVkhiR3RUYlhkMFUycGtkVlZzUmtwWFNGSlVZVVp3TTFveU5XMWpiSEF4VkRJNGFXWlJJaXdpZG1Gc2FXUkdjbTl0SWpvaU1qQXlNeTB3Tmkwd04xUXlNVG94TkRveE5DNHhORGhhSWl3aVkzSmxaR1Z1ZEdsaGJGTjFZbXBsWTNRaU9uc2lhV1FpT2lKb2RIUndjem92TDNOMVltcGxZM1F1ZG1WdVpHOXlMbVY0WVcxd2JHVWlmWDAubmczZlpDQXJyNUYwb1hOS1J1UlFNUXYtdnh4YlozUWJKVkJpcU1QUlVnSEFiSDVkMXptYjhLeUNkNnlVS3IxbmlsZmZiZ2pGUmRpRjFsWUdNRGNhQ0E=
-      </pre>
-
-      <pre class="example" title="Nested Unsecured JSON-LD Verifiable Presentation">
-data:application/vp+ld+json;base64,eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiXSwidHlwZSI6WyJWZXJpZmlhYmxlUHJlc2VudGF0aW9uIl0sInZlcmlmaWFibGVDcmVkZW50aWFsIjpbImRhdGE6YXBwbGljYXRpb24vdmMrbGQranNvbjtiYXNlNjQsZXlKQVkyOXVkR1Y0ZENJNld5Sm9kSFJ3Y3pvdkwzZDNkeTUzTXk1dmNtY3Zibk12WTNKbFpHVnVkR2xoYkhNdmRqSWlYU3dpZEhsd1pTSTZXeUpXWlhKcFptbGhZbXhsUTNKbFpHVnVkR2xoYkNKZExDSnBjM04xWlhJaU9pSm9kSFJ3Y3pvdkwybHpjM1ZsY2k1MlpXNWtiM0l1WlhoaGJYQnNaU0lzSW5aaGJHbGtSbkp2YlNJNklqSXdNak10TURZdE1EZFVNakU2TVRRNk1UUXVNVFE0V2lJc0ltTnlaV1JsYm5ScFlXeFRkV0pxWldOMElqcDdJbWxrSWpvaWFIUjBjSE02THk5emRXSnFaV04wTG5abGJtUnZjaTVsZUdGdGNHeGxJbjE5Il19
-      </pre>
-
-      <pre class="example" title="Nested Unsecured JWT">
-data:application/vp+ld+json+jwt;base64,ZXlKaGJHY2lPaUp1YjI1bElpd2lkSGx3SWpvaWRuQXJiR1FyYW5kMEluMC5leUpBWTI5dWRHVjRkQ0k2V3lKb2RIUndjem92TDNkM2R5NTNNeTV2Y21jdmJuTXZZM0psWkdWdWRHbGhiSE12ZGpJaVhTd2lkSGx3WlNJNld5SldaWEpwWm1saFlteGxVSEpsYzJWdWRHRjBhVzl1SWwwc0luWmxjbWxtYVdGaWJHVkRjbVZrWlc1MGFXRnNJanBiSW1SaGRHRTZZWEJ3YkdsallYUnBiMjR2ZG1NcmJHUXJhbmQwTzJKaGMyVTJOQ3hhV0d4TFlVZEtTRmt5YkZCaFZYQXhXV3BKTVdKRmJIQmtNbXhyVTBkNE0xTlhjSFpoVjFKMFZGaEthVkl4Um5sWlZ6VnJUVVZzZFUxRE5XeGxWWEJDVjFSSk5XUlhVa2hXYWxKclVUQnJNbFl6YkV0aU1sSkpWVzVrYW1WdE9USlVSRTVyVFRKU05VNVVUazVsVkZZeVdUSXhhbVJ0U25WVVdGcGFUVEJ3YzFkclpGZGtWMUpJWWtkb2FWTkZNVEphUjNCS1lWWm9WR1F5Ykd0VFIzZ3pWMnhPU2s1c1pEVlRiR1JoVjBWd2QxZHRNWE5oUm14MFpVZDRVazB3Y0hOWGEyUlhaRmRTU0dKSGFHbFJNSEJyVkVWT1MyTkhUWHBVYWtaaFYwVnNjRlF5YkV0aU1sSkpWVzVrYW1WdE9USlVSRXB6WlcxTmVsWnRlR3BoVkZWNVYyeGpNV0V5U1hwVFdGWmhWMGRvYjFsc2FFTmpNWEJVVTFoT1NtSnNjRzlaYTJSellURktkVk51V21sVk1Hc3lVMWR3U21Rd01YRlVXRkpPVWtac01GUlZVbXRXVlRGeFVsUmFUbFpHUlRKVVZsSlNaRlV4VlZWVVVsaGhWV3g2VTFjeFQyVldjRmhWYlhocFlteEtkMWRXWkRSV1IxSllVMjVHWVZZd05IZFRWM0IzVGpCc2RHSkhkRXBoYlRsd1dWVm9VMDFIVGtsVVZGcE5aVlJzTmxwR1pFdGpWbkJZVkdwQ1RXSnNjSE5aYlRGVFpHMU9jRTVYZUd4U01Gb3dXVEJrTkdKRmJIVk5WR3QxSWwxOS4=
-      </pre>
     </section>
 
     <section>
       <h2>
-        Detached Proofs
+        Detached Payload
       </h2>
-
-      <pre class="example" title="Verifiable Credential">
-{
-  "@context": ["https://www.w3.org/ns/credentials/v2"],
-  "type": [
-    "VerifiableCredential"
-  ],
-  "issuer": "urn:ietf:params:oauth:jwk-thumbprint:sha-256:_Fpfe27AuGmEljZE9s2lw2UH-qrZLRFNrWbJrWIe4SI",
-  "validFrom": "2023-06-07T21:14:14.148Z",
-  "credentialSubject": {
-    "id": "https://subject.vendor.example"
-  }
-}
-      </pre>
-
-      <pre class="example" title="Detached Verifiable Credential Proof">
-eyJhbGciOiJFUzM4NCIsInR5cCI6InZjK2xkK2p3dCIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..Z-s5JgWQK91e1bzk-87ofJcRqGrw7wGehepSYH3U18u9-BNi9QOcgHWMFAN72HGNNhmn9xyT7UF59om7Wbb_IQTPAlzjMdPbzfq3bRffutP-Swg_Sz2R1VwpufVJ5Ult
-      </pre>
-
-      <pre class="example" title="Verifiable Presentation">
-{
-  "@context": ["https://www.w3.org/ns/credentials/v2"],
-  "type": [
-    "VerifiablePresentation"
-  ],
-  "holder": "urn:ietf:params:oauth:jwk-thumbprint:sha-256:_Fpfe27AuGmEljZE9s2lw2UH-qrZLRFNrWbJrWIe4SI"
-}
-      </pre>
-
-      <pre class="example" title="Detached Presentation Proof">
-eyJhbGciOiJFUzM4NCIsInR5cCI6InZwK2xkK2p3dCIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..TsKRjY56LWTPPXWKLYfDs-NKmZZHIcrZ2pndwEDtO5DaGiDW3OtABr-esL9y6CdZTxwshoqZCs_RnPRx17-uO8k_SBugAQwnzN8bnulkSN4gXaST0kxk23X4bVmw6sBD
-      </pre>
-
       <p class="issue">TODO add COSE Sign1 detached payload examples</p>
-
-    </section>
-    <section>
-      <h3>Selective Disclosure</h3>
-      <p>The following examples are taken from <a data-cite="SD-JWT#name-example-4b-w3c-verifiable-c"></a>.</p>
-      <p class="issue">These example are from a work in progress draft.</p>
-      <p>
-        An issuer might start with a <code>vc+ld+json</code> claimset, for example:
-      </p>
-      <pre class="example">
-{
-  "@context": [
-    "https://www.w3.org/2018/credentials/v1",
-    "https://w3id.org/vaccination/v1"
-  ],
-  "type": [
-    "VerifiableCredential",
-    "VaccinationCertificate"
-  ],
-  "issuer": "https://example.com/issuer",
-  "issuanceDate": "2023-02-09T11:01:59Z",
-  "expirationDate": "2028-02-08T11:01:59Z",
-  "name": "COVID-19 Vaccination Certificate",
-  "description": "COVID-19 Vaccination Certificate",
-  "credentialSubject": {
-    "vaccine": {
-      "type": "Vaccine",
-      "atcCode": "J07BX03",
-      "medicinalProductName": "COVID-19 Vaccine Moderna",
-      "marketingAuthorizationHolder": "Moderna Biotech"
-    },
-    "nextVaccinationDate": "2021-08-16T13:40:12Z",
-    "countryOfVaccination": "GE",
-    "dateOfVaccination": "2021-06-23T13:40:12Z",
-    "order": "3/3",
-    "recipient": {
-      "type": "VaccineRecipient",
-      "gender": "Female",
-      "birthDate": "1961-08-17",
-      "givenName": "Marion",
-      "familyName": "Mustermann"
-    },
-    "type": "VaccinationEvent",
-    "administeringCentre": "Praxis Sommergarten",
-    "batchNumber": "1626382736",
-    "healthProfessional": "883110000015376"
-  }
-}
-      </pre>
-      <p>
-        The issuer converts this claimset into the SD-JWT payload, and encodes the token, for example:
-      </p>
-      <pre class="example">
-eyJhbGciOiAiRVMyNTYifQ.eyJpc3MiOiAiaHR0cHM6Ly9leGFtcGxlLmNvbS9pc3N1Z
-XIiLCAiaWF0IjogMTY4MzAwMDAwMCwgImV4cCI6IDE4ODMwMDAwMDAsICJAY29udGV4d
-CI6IFsiaHR0cHM6Ly93d3cudzMub3JnLzIwMTgvY3JlZGVudGlhbHMvdjEiLCAiaHR0c
-HM6Ly93M2lkLm9yZy92YWNjaW5hdGlvbi92MSJdLCAidHlwZSI6IFsiVmVyaWZpYWJsZ
-UNyZWRlbnRpYWwiLCAiVmFjY2luYXRpb25DZXJ0aWZpY2F0ZSJdLCAiaXNzdWVyIjogI
-mh0dHBzOi8vZXhhbXBsZS5jb20vaXNzdWVyIiwgImlzc3VhbmNlRGF0ZSI6ICIyMDIzL
-TAyLTA5VDExOjAxOjU5WiIsICJleHBpcmF0aW9uRGF0ZSI6ICIyMDI4LTAyLTA4VDExO
-jAxOjU5WiIsICJuYW1lIjogIkNPVklELTE5IFZhY2NpbmF0aW9uIENlcnRpZmljYXRlI
-iwgImRlc2NyaXB0aW9uIjogIkNPVklELTE5IFZhY2NpbmF0aW9uIENlcnRpZmljYXRlI
-iwgImNyZWRlbnRpYWxTdWJqZWN0IjogeyJfc2QiOiBbIjFWX0stOGxEUThpRlhCRlhiW
-lk5ZWhxUjRIYWJXQ2k1VDB5Ykl6WlBld3ciLCAiSnpqTGd0UDI5ZFAtQjN0ZDEyUDY3N
-GdGbUsyenk4MUhNdEJnZjZDSk5XZyIsICJSMmZHYmZBMDdaX1lsa3FtTlp5bWExeHl5e
-DFYc3RJaVM2QjFZYmwySlo0IiwgIlRDbXpybDdLMmdldl9kdTdwY01JeXpSTEhwLVllZ
-y1GbF9jeHRyVXZQeGciLCAiVjdrSkJMSzc4VG1WRE9tcmZKN1p1VVBIdUtfMmNjN3laU
-mE0cVYxdHh3TSIsICJiMGVVc3ZHUC1PRERkRm9ZNE5semxYYzN0RHNsV0p0Q0pGNzVOd
-zhPal9nIiwgInpKS19lU01YandNOGRYbU1aTG5JOEZHTTA4ekozX3ViR2VFTUotNVRCe
-TAiXSwgInZhY2NpbmUiOiB7Il9zZCI6IFsiMWNGNWhMd2toTU5JYXFmV0pyWEk3Tk1XZ
-WRMLTlmNlkyUEE1MnlQalNaSSIsICJIaXk2V1d1ZUxENWJuMTYyOTh0UHY3R1hobWxkT
-URPVG5CaS1DWmJwaE5vIiwgIkxiMDI3cTY5MWpYWGwtakM3M3ZpOGViT2o5c214M0MtX
-29nN2dBNFRCUUUiXSwgInR5cGUiOiAiVmFjY2luZSJ9LCAicmVjaXBpZW50IjogeyJfc
-2QiOiBbIjFsU1FCTlkyNHEwVGg2T0d6dGhxLTctNGw2Y0FheHJZWE9HWnBlV19sbkEiL
-CAiM256THE4MU0yb04wNndkdjFzaEh2T0VKVnhaNUtMbWREa0hFREpBQldFSSIsICJQb
-jFzV2kwNkc0TEpybm4tX1JUMFJiTV9IVGR4blBKUXVYMmZ6V3ZfSk9VIiwgImxGOXV6Z
-HN3N0hwbEdMYzcxNFRyNFdPN01HSnphN3R0N1FGbGVDWDRJdHciXSwgInR5cGUiOiAiV
-mFjY2luZVJlY2lwaWVudCJ9LCAidHlwZSI6ICJWYWNjaW5hdGlvbkV2ZW50In0sICJfc
-2RfYWxnIjogInNoYS0yNTYifQ.5jJEqiRViN_DJ4VMxHQIN4KK-Cdfn30nY3nRe5jGxS
-5Pths5G7mF1GWy9TawYuyFwCze7qiCIx_MhJ68Uu5zeQ~WyIyR0xDNDJzS1F2ZUNmR2Z
-yeU5STjl3IiwgImF0Y0NvZGUiLCAiSjA3QlgwMyJd~WyJlbHVWNU9nM2dTTklJOEVZbn
-N4QV9BIiwgIm1lZGljaW5hbFByb2R1Y3ROYW1lIiwgIkNPVklELTE5IFZhY2NpbmUgTW
-9kZXJuYSJd~WyI2SWo3dE0tYTVpVlBHYm9TNXRtdlZBIiwgIm1hcmtldGluZ0F1dGhvc
-ml6YXRpb25Ib2xkZXIiLCAiTW9kZXJuYSBCaW90ZWNoIl0~WyJlSThaV205UW5LUHBOU
-GVOZW5IZGhRIiwgIm5leHRWYWNjaW5hdGlvbkRhdGUiLCAiMjAyMS0wOC0xNlQxMzo0M
-DoxMloiXQ~WyJRZ19PNjR6cUF4ZTQxMmExMDhpcm9BIiwgImNvdW50cnlPZlZhY2Npbm
-F0aW9uIiwgIkdFIl0~WyJBSngtMDk1VlBycFR0TjRRTU9xUk9BIiwgImRhdGVPZlZhY2
-NpbmF0aW9uIiwgIjIwMjEtMDYtMjNUMTM6NDA6MTJaIl0~WyJQYzMzSk0yTGNoY1VfbE
-hnZ3ZfdWZRIiwgIm9yZGVyIiwgIjMvMyJd~WyJHMDJOU3JRZmpGWFE3SW8wOXN5YWpBI
-iwgImdlbmRlciIsICJGZW1hbGUiXQ~WyJsa2x4RjVqTVlsR1RQVW92TU5JdkNBIiwgIm
-JpcnRoRGF0ZSIsICIxOTYxLTA4LTE3Il0~WyJuUHVvUW5rUkZxM0JJZUFtN0FuWEZBIi
-wgImdpdmVuTmFtZSIsICJNYXJpb24iXQ~WyI1YlBzMUlxdVpOYTBoa2FGenp6Wk53Iiw
-gImZhbWlseU5hbWUiLCAiTXVzdGVybWFubiJd~WyI1YTJXMF9OcmxFWnpmcW1rXzdQcS
-13IiwgImFkbWluaXN0ZXJpbmdDZW50cmUiLCAiUHJheGlzIFNvbW1lcmdhcnRlbiJd~W
-yJ5MXNWVTV3ZGZKYWhWZGd3UGdTN1JRIiwgImJhdGNoTnVtYmVyIiwgIjE2MjYzODI3M
-zYiXQ~WyJIYlE0WDhzclZXM1FEeG5JSmRxeU9BIiwgImhlYWx0aFByb2Zlc3Npb25hbC
-IsICI4ODMxMTAwMDAwMTUzNzYiXQ~
-      </pre>
-      <p>
-        Notice that, in the case of sd-jwt, the decoded payload 
-        is different from the input claimset:
-      </p>
-      <pre class="example">
-{
-  "iss": "https://example.com/issuer",
-  "iat": 1683000000,
-  "exp": 1883000000,
-  "@context": [
-    "https://www.w3.org/2018/credentials/v1",
-    "https://w3id.org/vaccination/v1"
-  ],
-  "type": [
-    "VerifiableCredential",
-    "VaccinationCertificate"
-  ],
-  "issuer": "https://example.com/issuer",
-  "issuanceDate": "2023-02-09T11:01:59Z",
-  "expirationDate": "2028-02-08T11:01:59Z",
-  "name": "COVID-19 Vaccination Certificate",
-  "description": "COVID-19 Vaccination Certificate",
-  "credentialSubject": {
-    "_sd": [
-      "1V_K-8lDQ8iFXBFXbZY9ehqR4HabWCi5T0ybIzZPeww",
-      "JzjLgtP29dP-B3td12P674gFmK2zy81HMtBgf6CJNWg",
-      "R2fGbfA07Z_YlkqmNZyma1xyyx1XstIiS6B1Ybl2JZ4",
-      "TCmzrl7K2gev_du7pcMIyzRLHp-Yeg-Fl_cxtrUvPxg",
-      "V7kJBLK78TmVDOmrfJ7ZuUPHuK_2cc7yZRa4qV1txwM",
-      "b0eUsvGP-ODDdFoY4NlzlXc3tDslWJtCJF75Nw8Oj_g",
-      "zJK_eSMXjwM8dXmMZLnI8FGM08zJ3_ubGeEMJ-5TBy0"
-    ],
-    "vaccine": {
-      "_sd": [
-        "1cF5hLwkhMNIaqfWJrXI7NMWedL-9f6Y2PA52yPjSZI",
-        "Hiy6WWueLD5bn16298tPv7GXhmldMDOTnBi-CZbphNo",
-        "Lb027q691jXXl-jC73vi8ebOj9smx3C-_og7gA4TBQE"
-      ],
-      "type": "Vaccine"
-    },
-    "recipient": {
-      "_sd": [
-        "1lSQBNY24q0Th6OGzthq-7-4l6cAaxrYXOGZpeW_lnA",
-        "3nzLq81M2oN06wdv1shHvOEJVxZ5KLmdDkHEDJABWEI",
-        "Pn1sWi06G4LJrnn-_RT0RbM_HTdxnPJQuX2fzWv_JOU",
-        "lF9uzdsw7HplGLc714Tr4WO7MGJza7tt7QFleCX4Itw"
-      ],
-      "type": "VaccineRecipient"
-    },
-    "type": "VaccinationEvent"
-  },
-  "_sd_alg": "sha-256"
-}        
-      </pre>
-      <pre>
-{
-  "@context": [
-    "https://www.w3.org/2018/credentials/v1",
-    "https://w3id.org/vaccination/v1"
-  ],
-  "type": [
-    "VerifiableCredential",
-    "VaccinationCertificate"
-  ],
-  "issuer": "https://example.com/issuer",
-  "issuanceDate": "2023-02-09T11:01:59Z",
-  "expirationDate": "2028-02-08T11:01:59Z",
-  "name": "COVID-19 Vaccination Certificate",
-  "description": "COVID-19 Vaccination Certificate",
-  "credentialSubject": {
-    "vaccine": {
-      "type": "Vaccine",
-      "medicinalProductName": "COVID-19 Vaccine Moderna",
-      "atcCode": "J07BX03"
-    },
-    "recipient": {
-      "type": "VaccineRecipient"
-    },
-    "type": "VaccinationEvent",
-    "order": "3/3",
-    "dateOfVaccination": "2021-06-23T13:40:12Z"
-  },
-  "_sd_alg": "sha-256",
-  "cnf": {
-    "jwk": {
-      "kty": "EC",
-      "crv": "P-256",
-      "x": "TCAER19Zvu3OHF4j4W4vfSVoHIP1ILilDls7vCeGemc",
-      "y": "ZxjiWWbZMQGHVWKVQ4hbSIirsVfuecCE6t4jT9F2HZQ"
-    }
-  }
-}
-      </pre>
-      <p>
-        See <a data-cite="SD-JWT#name-example-4b-w3c-verifiable-c"></a> 
-        for a detailed explanation of each disclosable claim, 
-        and the mandatory to disclose claims.
-      </p>
-      <p>
-        The holder, converts the issued sd-jwt to its presentation form, 
-        redacting any fields they don't wish to disclose to the verifier, 
-        for example:
-      </p>
-      <pre class="example">
-eyJhbGciOiAiRVMyNTYifQ.eyJpc3MiOiAiaHR0cHM6Ly9leGFtcGxlLmNvbS9pc3N1Z
-XIiLCAiaWF0IjogMTY4MzAwMDAwMCwgImV4cCI6IDE4ODMwMDAwMDAsICJAY29udGV4d
-CI6IFsiaHR0cHM6Ly93d3cudzMub3JnLzIwMTgvY3JlZGVudGlhbHMvdjEiLCAiaHR0c
-HM6Ly93M2lkLm9yZy92YWNjaW5hdGlvbi92MSJdLCAidHlwZSI6IFsiVmVyaWZpYWJsZ
-UNyZWRlbnRpYWwiLCAiVmFjY2luYXRpb25DZXJ0aWZpY2F0ZSJdLCAiaXNzdWVyIjogI
-mh0dHBzOi8vZXhhbXBsZS5jb20vaXNzdWVyIiwgImlzc3VhbmNlRGF0ZSI6ICIyMDIzL
-TAyLTA5VDExOjAxOjU5WiIsICJleHBpcmF0aW9uRGF0ZSI6ICIyMDI4LTAyLTA4VDExO
-jAxOjU5WiIsICJuYW1lIjogIkNPVklELTE5IFZhY2NpbmF0aW9uIENlcnRpZmljYXRlI
-iwgImRlc2NyaXB0aW9uIjogIkNPVklELTE5IFZhY2NpbmF0aW9uIENlcnRpZmljYXRlI
-iwgImNyZWRlbnRpYWxTdWJqZWN0IjogeyJfc2QiOiBbIjFWX0stOGxEUThpRlhCRlhiW
-lk5ZWhxUjRIYWJXQ2k1VDB5Ykl6WlBld3ciLCAiSnpqTGd0UDI5ZFAtQjN0ZDEyUDY3N
-GdGbUsyenk4MUhNdEJnZjZDSk5XZyIsICJSMmZHYmZBMDdaX1lsa3FtTlp5bWExeHl5e
-DFYc3RJaVM2QjFZYmwySlo0IiwgIlRDbXpybDdLMmdldl9kdTdwY01JeXpSTEhwLVllZ
-y1GbF9jeHRyVXZQeGciLCAiVjdrSkJMSzc4VG1WRE9tcmZKN1p1VVBIdUtfMmNjN3laU
-mE0cVYxdHh3TSIsICJiMGVVc3ZHUC1PRERkRm9ZNE5semxYYzN0RHNsV0p0Q0pGNzVOd
-zhPal9nIiwgInpKS19lU01YandNOGRYbU1aTG5JOEZHTTA4ekozX3ViR2VFTUotNVRCe
-TAiXSwgInZhY2NpbmUiOiB7Il9zZCI6IFsiMWNGNWhMd2toTU5JYXFmV0pyWEk3Tk1XZ
-WRMLTlmNlkyUEE1MnlQalNaSSIsICJIaXk2V1d1ZUxENWJuMTYyOTh0UHY3R1hobWxkT
-URPVG5CaS1DWmJwaE5vIiwgIkxiMDI3cTY5MWpYWGwtakM3M3ZpOGViT2o5c214M0MtX
-29nN2dBNFRCUUUiXSwgInR5cGUiOiAiVmFjY2luZSJ9LCAicmVjaXBpZW50IjogeyJfc
-2QiOiBbIjFsU1FCTlkyNHEwVGg2T0d6dGhxLTctNGw2Y0FheHJZWE9HWnBlV19sbkEiL
-CAiM256THE4MU0yb04wNndkdjFzaEh2T0VKVnhaNUtMbWREa0hFREpBQldFSSIsICJQb
-jFzV2kwNkc0TEpybm4tX1JUMFJiTV9IVGR4blBKUXVYMmZ6V3ZfSk9VIiwgImxGOXV6Z
-HN3N0hwbEdMYzcxNFRyNFdPN01HSnphN3R0N1FGbGVDWDRJdHciXSwgInR5cGUiOiAiV
-mFjY2luZVJlY2lwaWVudCJ9LCAidHlwZSI6ICJWYWNjaW5hdGlvbkV2ZW50In0sICJfc
-2RfYWxnIjogInNoYS0yNTYifQ.5jJEqiRViN_DJ4VMxHQIN4KK-Cdfn30nY3nRe5jGxS
-5Pths5G7mF1GWy9TawYuyFwCze7qiCIx_MhJ68Uu5zeQ~WyJQYzMzSk0yTGNoY1VfbEh
-nZ3ZfdWZRIiwgIm9yZGVyIiwgIjMvMyJd~WyJBSngtMDk1VlBycFR0TjRRTU9xUk9BIi
-wgImRhdGVPZlZhY2NpbmF0aW9uIiwgIjIwMjEtMDYtMjNUMTM6NDA6MTJaIl0~WyIyR0
-xDNDJzS1F2ZUNmR2ZyeU5STjl3IiwgImF0Y0NvZGUiLCAiSjA3QlgwMyJd~WyJlbHVWN
-U9nM2dTTklJOEVZbnN4QV9BIiwgIm1lZGljaW5hbFByb2R1Y3ROYW1lIiwgIkNPVklEL
-TE5IFZhY2NpbmUgTW9kZXJuYSJd~
-      </pre>
-      <p>
-      After validation, the Verifier will have the following data for further processing:
-      </p>
-      <p class="note">
-        One benefit of using <code>vc+ld+json+jwt</code> and <code>vc+ld+json+sd-jwt</code> 
-        is that they both produce <code>vc+ld+json</code> which 
-        can be further processed as RDF by a verifier.
-      </p>
-      <p class="issue">
-        The working group is still discussing the relevance of the JWT BCP, 
-        and distinguishing vc+ld+json+sd-jwt from vc+sd-jwt via <code>type</code>.
-      </p>
-      <pre class="example">
-{
-  "iss": "https://example.com/issuer",
-  "iat": 1683000000,
-  "exp": 1883000000,
-  "@context": [
-    "https://www.w3.org/2018/credentials/v1",
-    "https://w3id.org/vaccination/v1"
-  ],
-  "type": [
-    "VerifiableCredential",
-    "VaccinationCertificate"
-  ],
-  "issuer": "https://example.com/issuer",
-  "issuanceDate": "2023-02-09T11:01:59Z",
-  "expirationDate": "2028-02-08T11:01:59Z",
-  "name": "COVID-19 Vaccination Certificate",
-  "description": "COVID-19 Vaccination Certificate",
-  "credentialSubject": {
-    "vaccine": {
-      "type": "Vaccine",
-      "atcCode": "J07BX03",
-      "medicinalProductName": "COVID-19 Vaccine Moderna"
-    },
-    "recipient": {
-      "type": "VaccineRecipient"
-    },
-    "type": "VaccinationEvent",
-    "order": "3/3",
-    "dateOfVaccination": "2021-06-23T13:40:12Z"
-  },
-  "_sd_alg": "sha-256"
-}
-      </pre>
     </section>
   </section>
   </section>
